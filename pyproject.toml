@@ -1,15 +1,15 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "cyber_ticket_env"
 version = "1.0.0"
-description = "CyberTicket: Automated IT Support Desk OpenEnv"
-dependencies = [
-    "fastapi",
-    "uvicorn",
-    "pydantic",
-    "openai",
-    "openenv-core"
-]
+description = "IT Support Desk OpenEnv"
+dependencies = ["fastapi", "uvicorn", "pydantic", "openai", "openenv-core"]
+
+[project.scripts]
+server = "server.app:app"
+
+[tool.setuptools]
+packages = ["server"]

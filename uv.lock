@@ -1,0 +1,15 @@
+version: 1
+dependencies:
+  - name: cyber_ticket_env
+    version: 1.0.0
+    source: { editable: true }
+  - name: fastapi
+    version: 0.110.0
+  - name: pydantic
+    version: 2.6.3
+  - name: uvicorn
+    version: 0.27.1
+  - name: openai
+    version: 1.12.0
+  - name: openenv-core
+    version: 0.1.0
