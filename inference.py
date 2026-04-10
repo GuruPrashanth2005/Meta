@@ -15,7 +15,7 @@ def run_inference():
         api_key=hf_token
     )
 
-    print(f"[START] task={task} env=CyberTicket model={model}")
+    print(f"[START] task={task} env=cyber_ticket_env model={model}")
 
     try:
         # Reset environment
