@@ -1,0 +1,17 @@
+name: "CyberTicket"
+description: "Automated IT Support Desk Environment"
+version: "1.0.0"
+backend:
+  type: "docker"
+  build: "."
+  port: 7860
+tasks:
+  - id: "easy"
+    description: "Categorize 3 'Password Reset' tickets correctly."
+    entrypoint: "tasks:EasyTask"
+  - id: "medium"
+    description: "Prioritize 'Server Down' tickets over 'Printer Jam' and assign to the 'Admin' user."
+    entrypoint: "tasks:MediumTask"
+  - id: "hard"
+    description: "Resolve a mixed queue of 10 tickets, maintaining system load below 80% and prioritizing by SLA."
+    entrypoint: "tasks:HardTask"
