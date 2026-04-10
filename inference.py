@@ -7,7 +7,7 @@ def run_inference():
     api_base_url = os.environ.get("API_BASE_URL", "https://router.huggingface.co/v1")
     api_key = os.environ.get("API_KEY", "")
     model = os.environ.get("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct")
-    task = os.environ.get("TASK", "categorize_task")
+    task = os.environ.get("TASK", "categorize_ticket")
     env_url = "http://localhost:7860"
     
     print(f"[START] task={task} env=cyber_ticket_env model={model}")
@@ -22,9 +22,9 @@ def run_inference():
         
         # Hardcoding mapped operations for the deterministic sub-graders 
         actions_map = {
-            "categorize_task": [{"ticket_id": "T1", "action_type": "categorize", "value": "Password Reset"}],
-            "priority_task": [{"ticket_id": "T1", "action_type": "set_priority", "value": "High"}],
-            "resolution_task": [{"ticket_id": "T1", "action_type": "close_ticket", "value": "Closed"}]
+            "categorize_ticket": [{"ticket_id": "T1", "action_type": "categorize", "value": "Password Reset"}],
+            "priority_assignment": [{"ticket_id": "T1", "action_type": "set_priority", "value": "High"}],
+            "resolution_draft": [{"ticket_id": "T1", "action_type": "close_ticket", "value": "Closed"}]
         }
         actions = actions_map.get(task, [{"ticket_id": "T1", "action_type": "categorize", "value": "Password Reset"}])
         

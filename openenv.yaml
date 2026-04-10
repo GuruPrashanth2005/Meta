@@ -5,12 +5,12 @@ backend:
   build: "."
   port: 7860
 tasks:
-  - id: "categorize_task"
+  - id: "categorize_ticket"
     difficulty: "easy"
-    entrypoint: "server.tasks:CategorizeTask"
-  - id: "priority_task"
+    entrypoint: "server.tasks:CategorizeTicketTask"
+  - id: "priority_assignment"
     difficulty: "medium"
-    entrypoint: "server.tasks:PriorityTask"
-  - id: "resolution_task"
+    entrypoint: "server.tasks:PriorityAssignmentTask"
+  - id: "resolution_draft"
     difficulty: "hard"
-    entrypoint: "server.tasks:ResolutionTask"
+    entrypoint: "server.tasks:ResolutionDraftTask"
