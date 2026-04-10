@@ -76,3 +76,10 @@ def get_state():
         system_load=env_state["system_load"],
         last_action_status=env_state["last_action_status"]
     )
+
+import uvicorn
+def main():
+    uvicorn.run("server.app:app", host="0.0.0.0", port=7860)
+
+if __name__ == "__main__":
+    main()
