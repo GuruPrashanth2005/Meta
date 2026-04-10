@@ -9,7 +9,7 @@ description = "IT Support Desk OpenEnv"
 dependencies = ["fastapi", "uvicorn", "pydantic", "openai", "openenv-core"]
 
 [project.scripts]
-server = "server.app:app"
+server = "server.app:main"
 
 [tool.setuptools]
 packages = ["server"]

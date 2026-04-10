@@ -78,8 +78,10 @@ def get_state():
     )
 
 import uvicorn
+
 def main():
-    uvicorn.run("server.app:app", host="0.0.0.0", port=7860)
+    """The entry point function the validator is looking for."""
+    uvicorn.run("server.app:app", host="0.0.0.0", port=7860, reload=False)
 
 if __name__ == "__main__":
     main()
