@@ -5,7 +5,15 @@ from server.tasks import TASK_GRADERS
 import os
 import uvicorn
 
-app = FastAPI(title="CyberTicket OpenEnv Backend")
+app = FastAPI(title="Enterprise CyberTicket Backend")
+
+# Session Manager to track agent accuracy trends over time
+SESSION_MANAGER = {
+    "step_count": 0,
+    "cumulative_reward": 0.0,
+    "reward_history": [],
+    "trend": "neutral"
+}
 
 @app.get("/")
 def read_root():
@@ -13,10 +21,19 @@ def read_root():
 
 @app.post("/reset")
 def reset_env():
-    return {"status": "Environment reset."}
+    global SESSION_MANAGER
+    SESSION_MANAGER = {
+        "step_count": 0,
+        "cumulative_reward": 0.0,
+        "reward_history": [],
+        "trend": "neutral"
+    }
+    return {"status": "Environment reset.", "session": SESSION_MANAGER}
 
 @app.post("/step")
 async def step_env(request: Request, action: TicketAction):
+    global SESSION_MANAGER
+    
     try:
         body = await request.json()
     except Exception:
@@ -27,12 +44,27 @@ async def step_env(request: Request, action: TicketAction):
     
     grader_func = TASK_GRADERS.get(task_id, lambda x: 0.01)
     reward_val = float(grader_func(action_str))
+    
+    # Internal Session tracking
+    SESSION_MANAGER["step_count"] += 1
+    SESSION_MANAGER["cumulative_reward"] += reward_val
+    SESSION_MANAGER["reward_history"].append(reward_val)
+    
+    history_len = len(SESSION_MANAGER["reward_history"])
+    if history_len > 1:
+        prev = SESSION_MANAGER["reward_history"][-2]
+        if reward_val > prev:
+            SESSION_MANAGER["trend"] = "improving"
+        elif reward_val < prev:
+            SESSION_MANAGER["trend"] = "degrading"
+        else:
+            SESSION_MANAGER["trend"] = "stable"
 
     return {
-        "observation": "success",
+        "observation": f"success_trend_{SESSION_MANAGER['trend']}",
         "reward": float(reward_val),
         "done": True,
-        "info": {}
+        "info": {"session_trend": SESSION_MANAGER["trend"]}
     }
 
 def main():
