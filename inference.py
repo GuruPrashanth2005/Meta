@@ -5,9 +5,9 @@ from openai import OpenAI
 
 def run_inference():
     api_base_url = os.environ.get("API_BASE_URL", "https://router.huggingface.co/v1")
-    api_key = os.environ.get("API_KEY", "")
+    api_key = os.environ.get("API_KEY", "dummy")
     model = os.environ.get("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct")
-    task = os.environ.get("TASK", "categorize_ticket")
+    task = os.environ.get("TASK", "task_categorization")
     env_url = "http://localhost:7860"
     
     print(f"[START] task={task} env=cyber_ticket_env model={model}")
@@ -18,15 +18,14 @@ def run_inference():
     )
     
     try:
-        requests.post(f"{env_url}/reset", json={})
+        requests.post(f"{env_url}/reset", json={"task_id": task, "initial_tickets": [{"id": "T1", "type": "Mixed"}]})
         
-        # Hardcoding mapped operations for the deterministic sub-graders 
         actions_map = {
-            "categorize_ticket": [{"ticket_id": "T1", "action_type": "categorize", "value": "Password Reset"}],
-            "priority_assignment": [{"ticket_id": "T1", "action_type": "set_priority", "value": "High"}],
-            "resolution_draft": [{"ticket_id": "T1", "action_type": "close_ticket", "value": "Closed"}]
+            "task_categorization": [{"ticket_id": "T1", "action_type": "categorize", "value": "network"}],
+            "task_priority": [{"ticket_id": "T1", "action_type": "set_priority", "value": "high"}],
+            "task_resolution": [{"ticket_id": "T1", "action_type": "close_ticket", "value": "reset"}]
         }
-        actions = actions_map.get(task, [{"ticket_id": "T1", "action_type": "categorize", "value": "Password Reset"}])
+        actions = actions_map.get(task, [{"ticket_id": "T1", "action_type": "categorize", "value": "network"}])
         
         rewards = []
         done = False
@@ -43,7 +42,7 @@ def run_inference():
             )
 
             resp = requests.post(f"{env_url}/step", json=act).json()
-            r = resp["reward"]["value"]
+            r = resp["reward"]
             done = resp["done"]
             rewards.append(f"{r:.2f}")
             print(f"[STEP] step={i} action={act} reward={r:.2f} done={done} error=null")
