@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Request
 from fastapi.responses import RedirectResponse
 from server.models import TicketAction, TicketObs, TicketReward
 from typing import Dict, Any
@@ -36,9 +36,16 @@ def reset_env(config: Dict[str, Any] = None):
     return get_state()
 
 @app.post("/step")
-def step_env(action: TicketAction):
+async def step_env(request: Request, action: TicketAction):
     global env_state
     
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+        
+    task_id = body.get("task_id", action.task_id or env_state.get("task_id", "task_categorization"))
+
     ticket = next((t for t in env_state["tickets"] if t["id"] == action.ticket_id), None)
     
     if not ticket:
@@ -57,7 +64,6 @@ def step_env(action: TicketAction):
     env_state["step_count"] += 1
     env_state["system_load"] = min(1.0, float(len(env_state["tickets"]) * 0.1))
 
-    task_id = os.environ.get("TASK", env_state.get("task_id", "task_categorization"))
     action_str = f"{action.action_type} {action.value}"
     
     grader_func = TASK_GRADERS.get(task_id, lambda x: 0.01)

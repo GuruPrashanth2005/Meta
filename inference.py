@@ -23,7 +23,7 @@ def run_inference():
         actions_map = {
             "task_categorization": [{"ticket_id": "T1", "action_type": "categorize", "value": "network"}],
             "task_priority": [{"ticket_id": "T1", "action_type": "set_priority", "value": "high"}],
-            "task_resolution": [{"ticket_id": "T1", "action_type": "close_ticket", "value": "reset"}]
+            "task_resolution": [{"ticket_id": "T1", "action_type": "close_ticket", "value": "resolved successfully"}]
         }
         actions = actions_map.get(task, [{"ticket_id": "T1", "action_type": "categorize", "value": "network"}])
         
@@ -41,6 +41,8 @@ def run_inference():
                 max_tokens=10
             )
 
+            # Insert task_id safely
+            act["task_id"] = task
             resp = requests.post(f"{env_url}/step", json=act).json()
             r = resp["reward"]
             done = resp["done"]
