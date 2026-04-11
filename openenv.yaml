@@ -5,12 +5,9 @@ backend:
   build: "."
   port: 7860
 tasks:
-  - id: "task_categorization"
-    name: "Categorize Ticket"
-    description: "Categorize an incoming IT ticket correctly."
-  - id: "task_priority"
-    name: "Assign Priority"
-    description: "Assign correct priority to the ticket."
-  - id: "task_resolution"
-    name: "Resolve Ticket"
-    description: "Provide a valid resolution for the ticket."
+  - id: "task_1"
+    name: "Categorization"
+  - id: "task_2"
+    name: "Priority"
+  - id: "task_3"
+    name: "Resolution"
