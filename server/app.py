@@ -3,16 +3,11 @@ from fastapi.responses import RedirectResponse
 from server.models import TicketAction
 from server.tasks import TASK_GRADERS
 import os
+import time
+import uuid
 import uvicorn
 
-app = FastAPI(title="Scaler SST CyberTicket Elite Backend")
-
-# Context Buffer to track conversation history per session
-CONTEXT_BUFFER = {
-    "step_count": 0,
-    "session_memory": [],
-    "cumulative_reward": 0.0,
-}
+app = FastAPI(title="CyberTicket High-Performance Backend")
 
 @app.get("/")
 def read_root():
@@ -20,17 +15,13 @@ def read_root():
 
 @app.post("/reset")
 def reset_env():
-    global CONTEXT_BUFFER
-    CONTEXT_BUFFER = {
-        "step_count": 0,
-        "session_memory": [],
-        "cumulative_reward": 0.0,
-    }
     return {"status": "Environment reset.", "memory_cleared": True}
 
 @app.post("/step")
 async def step_env(request: Request, action: TicketAction):
-    global CONTEXT_BUFFER
+    # Concurrency tracker metrics
+    req_id = str(uuid.uuid4())
+    start_time = time.time()
     
     try:
         body = await request.json()
@@ -43,20 +34,17 @@ async def step_env(request: Request, action: TicketAction):
     grader_func = TASK_GRADERS.get(task_id, lambda x: 0.01)
     reward_val = float(grader_func(action_str))
     
-    # Update Context Buffer
-    CONTEXT_BUFFER["step_count"] += 1
-    CONTEXT_BUFFER["cumulative_reward"] += reward_val
-    CONTEXT_BUFFER["session_memory"].append({
-        "task": task_id,
-        "action": action_str,
-        "reward": reward_val
-    })
-
+    # Capture latency dynamically for API logs
+    latency_ms = (time.time() - start_time) * 1000
+    
     return {
-        "observation": f"Action processed. Current buffer depth: {len(CONTEXT_BUFFER['session_memory'])}",
+        "observation": f"RequestProcessed [ReqID:{req_id}] in {latency_ms:.3f}ms",
         "reward": float(reward_val),
         "done": True,
-        "info": {"context_memory": CONTEXT_BUFFER["session_memory"]}
+        "info": {
+            "req_id": req_id,
+            "latency_ms": latency_ms
+        }
     }
 
 def main():
