@@ -7,7 +7,12 @@ import time
 import uuid
 import uvicorn
 
-app = FastAPI(title="CyberTicket High-Performance Backend")
+app = FastAPI(title="Scaler SST Astra Flux God-Tier Backend")
+
+GLOBAL_SESSION_MEMORY = {
+    "history": [],
+    "total_queries": 0
+}
 
 @app.get("/")
 def read_root():
@@ -15,11 +20,15 @@ def read_root():
 
 @app.post("/reset")
 def reset_env():
+    global GLOBAL_SESSION_MEMORY
+    GLOBAL_SESSION_MEMORY = {
+        "history": [],
+        "total_queries": 0
+    }
     return {"status": "Environment reset.", "memory_cleared": True}
 
 @app.post("/step")
 async def step_env(request: Request, action: TicketAction):
-    # Concurrency tracker metrics
     req_id = str(uuid.uuid4())
     start_time = time.time()
     
@@ -34,16 +43,23 @@ async def step_env(request: Request, action: TicketAction):
     grader_func = TASK_GRADERS.get(task_id, lambda x: 0.01)
     reward_val = float(grader_func(action_str))
     
-    # Capture latency dynamically for API logs
-    latency_ms = (time.time() - start_time) * 1000
+    GLOBAL_SESSION_MEMORY["total_queries"] += 1
+    GLOBAL_SESSION_MEMORY["history"].append({
+        "req_id": req_id,
+        "task_id": task_id,
+        "reward": reward_val
+    })
+    
+    latency_seconds = time.time() - start_time
+    latency_ms = latency_seconds * 1000.0
     
     return {
-        "observation": f"RequestProcessed [ReqID:{req_id}] in {latency_ms:.3f}ms",
+        "observation": f"Processed gracefully. Sequence Depth: {GLOBAL_SESSION_MEMORY['total_queries']}",
         "reward": float(reward_val),
         "done": True,
         "info": {
             "req_id": req_id,
-            "latency_ms": latency_ms
+            "latency_ms": f"{latency_ms:.4f}"
         }
     }
 
