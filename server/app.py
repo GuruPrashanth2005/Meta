@@ -7,25 +7,27 @@ import time
 import uuid
 import uvicorn
 
-app = FastAPI(title="Scaler SST Astra Flux God-Tier Backend")
+app = FastAPI(title="Astra Flux Scalable Backend - Async & Global State")
 
-GLOBAL_SESSION_MEMORY = {
-    "history": [],
-    "total_queries": 0
+# Global context dictionary to maintain state across tasks
+GLOBAL_CONTEXT = {
+    "session_id": str(uuid.uuid4()),
+    "task_history": [],
+    "total_interactions": 0,
+    "system_status": "resource limits active (2 vCPU / 8 GB RAM)"
 }
 
 @app.get("/")
-def read_root():
+async def read_root():
     return RedirectResponse(url='/docs')
 
 @app.post("/reset")
-def reset_env():
-    global GLOBAL_SESSION_MEMORY
-    GLOBAL_SESSION_MEMORY = {
-        "history": [],
-        "total_queries": 0
-    }
-    return {"status": "Environment reset.", "memory_cleared": True}
+async def reset_env():
+    global GLOBAL_CONTEXT
+    GLOBAL_CONTEXT["session_id"] = str(uuid.uuid4())
+    GLOBAL_CONTEXT["task_history"] = []
+    GLOBAL_CONTEXT["total_interactions"] = 0
+    return {"status": "Environment reset.", "context_cleared": True}
 
 @app.post("/step")
 async def step_env(request: Request, action: TicketAction):
@@ -43,23 +45,25 @@ async def step_env(request: Request, action: TicketAction):
     grader_func = TASK_GRADERS.get(task_id, lambda x: 0.01)
     reward_val = float(grader_func(action_str))
     
-    GLOBAL_SESSION_MEMORY["total_queries"] += 1
-    GLOBAL_SESSION_MEMORY["history"].append({
+    GLOBAL_CONTEXT["total_interactions"] += 1
+    GLOBAL_CONTEXT["task_history"].append({
         "req_id": req_id,
         "task_id": task_id,
-        "reward": reward_val
+        "reward": reward_val,
+        "action": action_str
     })
     
     latency_seconds = time.time() - start_time
     latency_ms = latency_seconds * 1000.0
     
     return {
-        "observation": f"Processed gracefully. Sequence Depth: {GLOBAL_SESSION_MEMORY['total_queries']}",
+        "observation": f"Request processed efficiently. Current Interaction Depth: {GLOBAL_CONTEXT['total_interactions']}",
         "reward": float(reward_val),
         "done": True,
         "info": {
             "req_id": req_id,
-            "latency_ms": f"{latency_ms:.4f}"
+            "latency_ms": f"{latency_ms:.4f}",
+            "session_id": GLOBAL_CONTEXT["session_id"]
         }
     }
 
